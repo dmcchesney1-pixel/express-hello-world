@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch");
 
 const app = express();
 app.use(cors());
@@ -12,46 +11,39 @@ app.post("/generate", async (req, res) => {
   try {
     const { email } = req.body;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are Dawn, Assistant Director of Test Administration.
+        model: "gpt-4.1-mini",
+        input: `You are Dawn, Assistant Director of Test Administration.
 
-Write professional email responses to Test Center Coordinators.
+Write a professional email reply to this message:
 
-Be clear, supportive, and include next steps.
+${email}
+
+Keep it clear, helpful, and include next steps.
 
 End with:
 
 Best regards,
 Dawn
 Assistant Director of Test Administration`
-          },
-          {
-            role: "user",
-            content: email
-          }
-        ]
       })
     });
 
     const data = await response.json();
 
-    res.json({
-      reply: data.choices[0].message.content
-    });
+    const reply = data.output?.[0]?.content?.[0]?.text || "Error generating response";
+
+    res.json({ reply });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
