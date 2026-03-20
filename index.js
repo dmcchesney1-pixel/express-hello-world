@@ -37,13 +37,25 @@ Assistant Director of Test Administration`
 
     const data = await response.json();
 
-    const reply = data.output?.[0]?.content?.[0]?.text || "Error generating response";
+    console.log("OPENAI RESPONSE:", JSON.stringify(data, null, 2));
+
+    if (!data.output || !data.output[0]) {
+      return res.json({
+        reply: "Error: No response from AI. Check API key or usage limits."
+      });
+    }
+
+    const reply =
+      data.output[0].content?.[0]?.text ||
+      "Error: Could not parse AI response";
 
     res.json({ reply });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
+    console.error("SERVER ERROR:", error);
+    res.json({
+      reply: "Server error occurred. Check Render logs."
+    });
   }
 });
 
